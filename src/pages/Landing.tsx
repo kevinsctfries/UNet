@@ -1,5 +1,4 @@
-import { Link, Route } from "react-router-dom";
-import Login from "./Login";
+import { Link } from "react-router-dom";
 
 const SplashPage = () => {
   return (
@@ -47,7 +46,6 @@ const SplashPage = () => {
                 Login
               </button>
             </Link>
-
             <button className="bg-cyan-600 text-white py-2 px-4 font-semibold hover:bg-cyan-700 transition">
               Sign Up
             </button>
