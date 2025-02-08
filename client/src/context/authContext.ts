@@ -10,6 +10,7 @@ interface User {
 interface AuthContextType {
   currentUser: User | null;
   login: (inputs: any) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 // Create the context with a default value (undefined for now)
@@ -39,13 +40,27 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
     setCurrentUser(res.data);
   };
 
+  const logout = async () => {
+    try {
+      await axios.post(
+        "http://localhost:8800/api/auth/logout",
+        {},
+        { withCredentials: true }
+      );
+      setCurrentUser(null);
+      localStorage.removeItem("user");
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
+
   useEffect(() => {
     localStorage.setItem("user", JSON.stringify(currentUser));
   }, [currentUser]);
 
   return React.createElement(
     AuthContext.Provider,
-    { value: { currentUser, login } },
+    { value: { currentUser, login, logout } },
     children
   );
 };

@@ -1,8 +1,19 @@
 import { useContext } from "react";
 import { AuthContext } from "../context/authContext";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
-  const { currentUser } = useContext(AuthContext) || {};
+  const { currentUser, logout } = useContext(AuthContext)!;
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout(); // Call logout method from context
+      navigate("/"); // Redirect to login page after logout
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 w-full h-16 bg-blue-600 text-white shadow-lg">
@@ -23,7 +34,11 @@ const Header = () => {
                   />
                 </li>
                 <li>
-                  <button className="hover:text-gray-200">Logout</button>
+                  <button
+                    onClick={handleLogout}
+                    className="hover:text-gray-200">
+                    Logout
+                  </button>
                 </li>
               </>
             ) : (
