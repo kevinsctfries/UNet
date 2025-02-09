@@ -3,44 +3,51 @@ import React, { createContext, useEffect, useState, ReactNode } from "react";
 
 interface User {
   id: number;
-  name: string;
-  profilePic: string;
+  username: string;
+  email: string;
+  name?: string;
+}
+
+interface LoginInputs {
+  username: string;
+  password: string;
 }
 
 interface AuthContextType {
   currentUser: User | null;
-  login: (inputs: any) => Promise<void>;
+  login: (inputs: LoginInputs) => Promise<void>;
   logout: () => Promise<void>;
 }
 
-// Create the context with a default value (undefined for now)
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
+export const AuthContext = createContext<AuthContextType>({
+  currentUser: null,
+  login: async () => {},
+  logout: async () => {},
+});
 
-// Define the props for the provider component
-interface AuthContextProviderProps {
-  children: ReactNode;
-}
+export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
 
-export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
-  const [currentUser, setCurrentUser] = useState<any>(
-    JSON.parse(localStorage.getItem("user") || "null")
-  );
-
-  const login = async (inputs: any) => {
-    const res = await axios.post(
-      "http://localhost:8800/api/auth/login",
-      inputs,
-      {
-        withCredentials: true,
-      }
-    );
-
-    setCurrentUser(res.data);
+  const login = async (inputs: LoginInputs): Promise<void> => {
+    try {
+      const res = await axios.post<User>(
+        "http://localhost:8800/api/auth/login",
+        inputs,
+        {
+          withCredentials: true,
+        }
+      );
+      setCurrentUser(res.data);
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error;
+    }
   };
 
-  const logout = async () => {
+  const logout = async (): Promise<void> => {
     try {
       await axios.post(
         "http://localhost:8800/api/auth/logout",
@@ -50,7 +57,8 @@ export const AuthContextProvider = ({ children }: AuthContextProviderProps) => {
       setCurrentUser(null);
       localStorage.removeItem("user");
     } catch (error) {
-      console.error("Logout failed", error);
+      console.error("Logout failed:", error);
+      throw error;
     }
   };
 
