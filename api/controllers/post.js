@@ -1,6 +1,9 @@
 import { db } from "../connect.js";
 
 export const getPosts = (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not logged in!");
+
   const q =
     "SELECT p.*, u.id AS userId, name, profilePic FROM posts AS p JOIN users AS u ON (u.id = p.userId)";
   //TO DO
