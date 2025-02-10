@@ -3,19 +3,38 @@ import jwt from "jsonwebtoken";
 
 export const getUnion = (req, res) => {
   const { slug } = req.params;
+  console.log("Attempting to fetch union with slug:", slug);
 
   const q = `
-    SELECT u.*, 
-           user.username as ownerUsername,
-           user.name as ownerName 
+    SELECT 
+      u.*,
+      JSON_OBJECT(
+        'id', user.id,
+        'username', user.username
+      ) as owner
     FROM unions u 
-    JOIN users user ON u.ownerId = user.id 
-    WHERE u.slug = ?`;
+    LEFT JOIN users user ON u.ownerId = user.id 
+    WHERE u.slug = ?
+    LIMIT 1`;
 
   db.query(q, [slug], (err, data) => {
-    if (err) return res.status(500).json(err);
-    if (data.length === 0) return res.status(404).json("Union not found!");
-    return res.status(200).json(data[0]);
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json(err);
+    }
+
+    console.log("Query results:", data);
+
+    if (!data || data.length === 0) {
+      return res.status(404).json("Union not found!");
+    }
+
+    const union = {
+      ...data[0],
+      owner: JSON.parse(data[0].owner),
+    };
+
+    return res.status(200).json(union);
   });
 };
 
@@ -26,10 +45,10 @@ export const createUnion = (req, res) => {
   jwt.verify(token, "secretKey", (err, userInfo) => {
     if (err) return res.status(403).json("Token is not valid!");
 
-    const { name, slug, description } = req.body;
+    const { name, slug, desc } = req.body;
 
     const q = `
-        INSERT INTO unions (name, slug, desc, ownerId) 
+        INSERT INTO unions (name, slug, \`desc\`, ownerId) 
         VALUES (?, ?, ?, ?)`;
 
     db.query(q, [name, slug, desc, userInfo.id], (err, data) => {

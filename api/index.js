@@ -7,6 +7,7 @@ import userRoutes from "./routes/users.js";
 import postRoutes from "./routes/posts.js";
 import likeRoutes from "./routes/likes.js";
 import commentRoutes from "./routes/comments.js";
+import unionRoutes from "./routes/unions.js";
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/likes", likeRoutes);
 app.use("/api/comments", commentRoutes);
+app.use("/api/unions", unionRoutes);
 
 app.listen(8800, err => {
   if (err) {
