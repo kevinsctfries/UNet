@@ -6,6 +6,7 @@ interface User {
   username: string;
   email: string;
   name?: string;
+  profilePic?: string;
 }
 
 interface LoginInputs {

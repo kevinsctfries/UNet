@@ -1,44 +1,53 @@
-import { useContext, useState } from "react";
+import { useContext, useState, FormEvent } from "react";
 import { AuthContext } from "../context/authContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
-const Login = () => {
-  const [inputs, setInputs] = useState({
+interface LoginInputs {
+  username: string;
+  password: string;
+}
+
+const Login: React.FC = () => {
+  const [inputs, setInputs] = useState<LoginInputs>({
     username: "",
     password: "",
   });
 
-  const [err, setErr] = useState<null | string>(null);
-
+  const [err, setErr] = useState<string | null>(null);
   const navigate = useNavigate();
-
   const context = useContext(AuthContext);
 
   if (!context) {
-    return <div>Error: AuthContext is not available!</div>;
+    throw new Error("Login must be used within an AuthContext.Provider");
   }
+
+  const { login } = context;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputs(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const { login } = context;
-
-  const handleLogin = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setErr(null);
+
     try {
       await login(inputs);
       navigate("/");
-    } catch (err: any) {
-      setErr(err.response?.data?.message || "An error occurred");
+    } catch (err) {
+      if (err instanceof Error) {
+        setErr(err.message);
+      } else {
+        setErr("An unexpected error occurred");
+      }
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-96">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 animate-gradient-xy">
+      <div className="bg-white/90 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-96 transition-all duration-300 hover:shadow-3xl">
         <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           {/* Username Input */}
           <div>
             <label
@@ -82,12 +91,20 @@ const Login = () => {
             )}
             <button
               type="submit"
-              onClick={handleLogin}
               className="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
               Login
             </button>
           </div>
         </form>
+
+        {/* Registration Link */}
+        <div className="mt-4 text-center">
+          <Link
+            to="/register"
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+            Don't have an account? Register here
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -1,47 +1,64 @@
-const Sidebar = () => {
+import { Link } from "react-router-dom";
+import React from "react";
+
+interface SidebarLinkProps {
+  to: string;
+  children: React.ReactNode;
+}
+
+interface SidebarSectionProps {
+  title: string;
+  links: Array<{
+    to: string;
+    label: string;
+  }>;
+}
+
+const SidebarLink: React.FC<SidebarLinkProps> = ({ to, children }) => (
+  <li>
+    <Link
+      to={to}
+      className="block hover:text-blue-400 cursor-pointer transition-colors duration-300">
+      {children}
+    </Link>
+  </li>
+);
+
+const SidebarSection: React.FC<SidebarSectionProps> = ({ title, links }) => (
+  <div>
+    <span className="text-lg font-semibold text-blue-700">{title}</span>
+    <ul className="mt-4 p-4 space-y-2 bg-white rounded-lg shadow-sm">
+      {links.map((link, index) => (
+        <SidebarLink key={`${title}-${index}`} to={link.to}>
+          {link.label}
+        </SidebarLink>
+      ))}
+    </ul>
+  </div>
+);
+
+const Sidebar: React.FC = () => {
+  const unionLinks = [
+    { to: "/unions/programming", label: "Programming" },
+    { to: "/unions/gaming", label: "Gaming" },
+    { to: "/unions/technology", label: "Technology" },
+    { to: "/unions/webdev", label: "WebDev" },
+    { to: "/unions/flying", label: "Flying" },
+  ];
+
+  const resourceLinks = [
+    { to: "/resources/documents", label: "Documents" },
+    { to: "/resources/benefits", label: "Benefits" },
+    { to: "/resources/training", label: "Training" },
+    { to: "/resources/legal", label: "Legal Help" },
+    { to: "/resources/faq", label: "FAQ" },
+  ];
+
   return (
-    <div className="bg-blue-100 h-full text-gray-800 p-4 space-y-8 shadow-md">
-      <div>
-        <span className="text-lg font-semibold text-blue-700">Unions</span>
-        <ul className="mt-4 p-4 space-y-2 bg-white rounded-lg shadow-sm">
-          <li className="hover:text-blue-400 cursor-pointer transition-colors duration-300">
-            Link 1
-          </li>
-          <li className="hover:text-blue-400 cursor-pointer transition-colors duration-300">
-            Link 2
-          </li>
-          <li className="hover:text-blue-400 cursor-pointer transition-colors duration-300">
-            Link 3
-          </li>
-          <li className="hover:text-blue-400 cursor-pointer transition-colors duration-300">
-            Link 4
-          </li>
-          <li className="hover:text-blue-400 cursor-pointer transition-colors duration-300">
-            Link 5
-          </li>
-        </ul>
-      </div>
-      <div>
-        <span className="text-lg font-semibold text-blue-700">Resources</span>
-        <ul className="mt-4 p-4 space-y-2 bg-white rounded-lg shadow-sm">
-          <li className="hover:text-blue-400 cursor-pointer transition-colors duration-300">
-            Link 1
-          </li>
-          <li className="hover:text-blue-400 cursor-pointer transition-colors duration-300">
-            Link 2
-          </li>
-          <li className="hover:text-blue-400 cursor-pointer transition-colors duration-300">
-            Link 3
-          </li>
-          <li className="hover:text-blue-400 cursor-pointer transition-colors duration-300">
-            Link 4
-          </li>
-          <li className="hover:text-blue-400 cursor-pointer transition-colors duration-300">
-            Link 5
-          </li>
-        </ul>
-      </div>
-    </div>
+    <nav className="bg-blue-100 h-full text-gray-800 p-4 space-y-8 shadow-md">
+      <SidebarSection title="Unions" links={unionLinks} />
+      <SidebarSection title="Resources" links={resourceLinks} />
+    </nav>
   );
 };
 
