@@ -2,7 +2,7 @@
 // import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
 import TextsmsOutlinedIcon from "@mui/icons-material/TextsmsOutlined";
 import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import { Link } from "react-router-dom";
 import { useState, useContext } from "react";
 // import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"; // Commented out for likes functionality
@@ -85,16 +85,32 @@ const Post: React.FC<PostProps> = ({ post }) => {
               </Link>
             </div>
           </div>
-          <MoreHorizIcon
-            className="cursor-pointer text-gray-500"
-            onClick={() => setMenuOpen(!menuOpen)}
-          />
-          {menuOpen && currentUser && post.userId === currentUser.id && (
-            <button
-              onClick={handleDelete}
-              className="text-red-500 mt-2 p-1 bg-gray-100 rounded-md hover:bg-gray-200">
-              Delete
-            </button>
+          {currentUser && post.userId === currentUser.id && (
+            <>
+              <DeleteOutlinedIcon
+                className="cursor-pointer text-gray-500 hover:text-gray-700"
+                onClick={() => setMenuOpen(!menuOpen)}
+              />
+              {menuOpen && (
+                <div className="absolute py-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200">
+                  <div className="px-4 py-2 text-sm text-gray-700">
+                    Delete post?
+                  </div>
+                  <div className="flex justify-end px-4 py-2 space-x-2">
+                    <button
+                      onClick={() => setMenuOpen(false)}
+                      className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors">
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleDelete}
+                      className="px-3 py-1 text-sm text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 
