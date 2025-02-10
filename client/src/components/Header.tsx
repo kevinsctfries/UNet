@@ -37,7 +37,7 @@ const Header: React.FC = () => {
                     alt={`${
                       currentUser.name || currentUser.username
                     }'s profile`}
-                    className="w-8 h-8 rounded-full object-cover border-2 border-white"
+                    className="w-8 h-8 rounded-full object-cover"
                   />
                 </li>
                 <li>
