@@ -87,27 +87,23 @@ const Post: React.FC<PostProps> = ({ post }) => {
           </div>
           {currentUser && post.userId === currentUser.id && (
             <>
-              <DeleteOutlinedIcon
-                className="cursor-pointer text-gray-500 hover:text-gray-700"
-                onClick={() => setMenuOpen(!menuOpen)}
-              />
-              {menuOpen && (
-                <div className="absolute py-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200">
-                  <div className="px-4 py-2 text-sm text-gray-700">
-                    Delete post?
-                  </div>
-                  <div className="flex justify-end px-4 py-2 space-x-2">
-                    <button
-                      onClick={() => setMenuOpen(false)}
-                      className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors">
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleDelete}
-                      className="px-3 py-1 text-sm text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors">
-                      Delete
-                    </button>
-                  </div>
+              {!menuOpen ? (
+                <DeleteOutlinedIcon
+                  className="cursor-pointer text-gray-500 hover:text-gray-700"
+                  onClick={() => setMenuOpen(true)}
+                />
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleDelete}
+                    className="px-2 py-1 text-sm text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors">
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => setMenuOpen(false)}
+                    className="px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors">
+                    Cancel
+                  </button>
                 </div>
               )}
             </>
@@ -119,7 +115,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
           {post.img && (
             <img
               className="mt-4 w-full h-auto rounded-lg shadow-md"
-              src={`/upload/${post.img}`}
+              src={post.img}
               alt="Post"
             />
           )}
