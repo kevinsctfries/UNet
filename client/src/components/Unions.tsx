@@ -38,6 +38,7 @@ const UnionView: React.FC<UnionViewProps> = ({ slug }) => {
   const [sortBy, setSortBy] = useState<SortOption>("most_liked");
   const [timeframe, setTimeframe] = useState<TimeframeOption>("today");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [content, setContent] = useState("");
 
   useEffect(() => {
     const fetchUnion = async () => {
@@ -55,6 +56,39 @@ const UnionView: React.FC<UnionViewProps> = ({ slug }) => {
 
     fetchUnion();
   }, [slug]);
+
+  const handleCreatePost = async () => {
+    try {
+      if (!content.trim()) {
+        console.error("Content is required");
+        return;
+      }
+
+      if (!union?.id) {
+        return;
+      }
+
+      const postData = {
+        desc: content.trim(),
+        unionId: union.id,
+      };
+
+      const response = await makeRequest.post("/posts", postData);
+
+      setContent("");
+      setIsCreateOpen(false);
+      // Optional: Refresh posts
+      window.location.reload();
+    } catch (err: any) {
+      console.error(
+        "Failed to create post:",
+        err.response?.data || err.message
+      );
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        alert("Please log in to create posts");
+      }
+    }
+  };
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
@@ -138,7 +172,7 @@ const UnionView: React.FC<UnionViewProps> = ({ slug }) => {
               Create a Post
             </h2>
             <div className="space-y-4">
-              <div>
+              {/* <div>
                 <label
                   htmlFor="post-title"
                   className="block text-sm font-medium text-gray-700 mb-2">
@@ -147,10 +181,12 @@ const UnionView: React.FC<UnionViewProps> = ({ slug }) => {
                 <input
                   type="text"
                   id="post-title"
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
                   placeholder="Enter your post title"
                   className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-              </div>
+              </div> */}
               <div>
                 <label
                   htmlFor="post-content"
@@ -159,13 +195,17 @@ const UnionView: React.FC<UnionViewProps> = ({ slug }) => {
                 </label>
                 <textarea
                   id="post-content"
+                  value={content}
+                  onChange={e => setContent(e.target.value)}
                   rows={4}
                   placeholder="What would you like to share?"
                   className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
               </div>
               <div className="flex justify-between mt-4">
-                <button className="inline-flex items-center gap-2 border-2 border-blue-600 bg-white hover:bg-blue-50 rounded-full px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md">
+                <button
+                  onClick={handleCreatePost}
+                  className="inline-flex items-center gap-2 border-2 border-blue-600 bg-white hover:bg-blue-50 rounded-full px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md">
                   <span className="text-blue-600 font-medium">Create Post</span>
                 </button>
                 <button

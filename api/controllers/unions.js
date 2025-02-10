@@ -3,7 +3,6 @@ import jwt from "jsonwebtoken";
 
 export const getUnion = (req, res) => {
   const { slug } = req.params;
-  console.log("Attempting to fetch union with slug:", slug);
 
   const q = `
     SELECT 
