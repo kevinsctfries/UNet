@@ -1,7 +1,7 @@
 import { makeRequest } from "../axios";
-import { useQuery } from "@tanstack/react-query";
 import Post from "./Post";
 import { AxiosError } from "axios";
+import { useEffect, useState } from "react";
 
 interface Post {
   id: number;
@@ -13,20 +13,36 @@ interface Post {
   createdAt: string;
 }
 
-const Posts: React.FC = () => {
-  const {
-    isLoading,
-    error,
-    data: posts,
-  } = useQuery<Post[], AxiosError>({
-    queryKey: ["posts"],
-    queryFn: async () => {
-      const response = await makeRequest.get("/posts");
-      return response.data;
-    },
-    staleTime: 60000, // Cache data for 1 minute
-    retry: 2, // Retry failed requests twice
-  });
+interface PostsProps {
+  sortBy: SortOption;
+  timeframe: TimeframeOption;
+  unionId?: number;
+}
+
+const Posts: React.FC<PostsProps> = ({ sortBy, timeframe, unionId }) => {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<AxiosError | null>(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const params = {
+          sortBy,
+          timeframe,
+          ...(unionId && { unionId }), // Only add unionId to params if it exists
+        };
+        const res = await makeRequest.get("/posts", { params });
+        setPosts(res.data);
+        setIsLoading(false);
+      } catch (err) {
+        setError(err as AxiosError);
+        setIsLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [sortBy, timeframe, unionId]);
 
   if (error) {
     return (
