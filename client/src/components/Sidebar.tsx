@@ -39,11 +39,8 @@ const SidebarSection: React.FC<SidebarSectionProps> = ({ title, links }) => (
 
 const Sidebar: React.FC = () => {
   const unionLinks = [
-    { to: "/unions/programming", label: "Programming" },
-    { to: "/unions/gaming", label: "Gaming" },
-    { to: "/unions/technology", label: "Technology" },
-    { to: "/unions/webdev", label: "WebDev" },
-    { to: "/unions/flying", label: "Flying" },
+    { to: "/u/programming", label: "Programming" },
+    { to: "/u/lego", label: "Lego" },
   ];
 
   const resourceLinks = [
