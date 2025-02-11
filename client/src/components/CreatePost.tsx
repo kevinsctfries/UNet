@@ -47,12 +47,17 @@ const CreatePost: React.FC<CreatePostProps> = ({ onSubmit, onCancel }) => {
         </div>
 
         <div className="flex items-center gap-2">
+          <label htmlFor="file-upload" className="sr-only">
+            Upload image
+          </label>
           <input
+            id="file-upload"
             type="file"
             ref={fileInputRef}
             onChange={handleFileChange}
             accept="image/*"
             className="hidden"
+            title="Upload image"
           />
           <button
             onClick={() => fileInputRef.current?.click()}
