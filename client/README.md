@@ -1,50 +1,123 @@
-# React + TypeScript + Vite
+# UNet Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend for UNet - A social platform for building communities.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Authentication**
 
-## Expanding the ESLint configuration
+  - JWT-based auth with persistent sessions
+  - Google OAuth integration
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- **Unions (Communities)**
 
-- Configure the top-level `parserOptions` property like this:
+  - Join and interact with communities
+  - Custom profile and cover images
+  - Role-based access control
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- **Content**
+  - Create posts with text and images
+  - Sort by popularity, trending, or newest
+  - Filter by timeframe
+  - Like and comment system
+
+## 🛠️ Tech Stack
+
+- React 19
+- TypeScript
+- Vite
+- TailwindCSS
+- Axios
+- React Query
+- Cloudinary SDK
+
+## 📦 Installation
+
+1. Install dependencies:
+
+```bash
+npm install
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+2. Set up environment variables:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+```bash
+# Create .env file
+touch .env
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+# Add required variables
+VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_upload_preset
 ```
+
+3. Start development server:
+
+```bash
+npm run dev
+```
+
+## 🔧 Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run lint` - Run ESLint
+- `npm run preview` - Preview production build
+
+### Project Structure
+
+```
+/src
+├── /components     # Reusable UI components
+├── /context       # React Context providers
+├── /hooks         # Custom React hooks
+├── /pages         # Route components
+├── /types         # TypeScript definitions
+├── /utils         # Helper functions
+└── /assets        # Static assets
+```
+
+### Environment Variables
+
+```properties
+VITE_CLOUDINARY_CLOUD_NAME=           # Your Cloudinary cloud name
+VITE_CLOUDINARY_UPLOAD_PRESET=        # Your Cloudinary upload preset
+```
+
+## 🧪 Testing
+
+```bash
+npm run test
+```
+
+## 📚 Dependencies
+
+Core:
+
+- react
+- react-dom
+- react-router-dom
+- axios
+- @tanstack/react-query
+
+UI:
+
+- tailwindcss
+- @mui/icons-material
+- @mui/material
+
+Development:
+
+- typescript
+- vite
+- @vitejs/plugin-react
+- eslint
+- prettier
+
+## 🤝 Contributing
+
+1. Follow TypeScript best practices
+2. Use ESLint and Prettier for code formatting
+3. Add appropriate tests for new features
+4. Follow the existing component patterns
