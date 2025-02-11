@@ -1,7 +1,27 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import { makeRequest } from "../axios";
+import { AxiosError } from "axios";
 import Posts from "./Posts";
 import AddIcon from "@mui/icons-material/Add";
+import CreatePost from "./CreatePost";
+import { AuthContext } from "../context/authContext";
+import { useCloudinary } from "../hooks/useCloudinary";
+
+// Add AuthContext type
+interface LoginInputs {
+  username: string;
+  password: string;
+}
+
+interface AuthContextType {
+  currentUser: {
+    id: number;
+    username: string;
+    // ... other user properties
+  } | null;
+  login: (inputs: LoginInputs) => Promise<void>;
+  logout: () => Promise<void>;
+}
 
 interface UnionType {
   id: number;
@@ -32,23 +52,33 @@ type TimeframeOption =
   | "all_time";
 
 const UnionView: React.FC<UnionViewProps> = ({ slug }) => {
+  const { currentUser } = useContext(
+    AuthContext as React.Context<AuthContextType>
+  );
   const [union, setUnion] = useState<UnionType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("most_liked");
   const [timeframe, setTimeframe] = useState<TimeframeOption>("today");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [content, setContent] = useState("");
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const profileInputRef = useRef<HTMLInputElement>(null);
+  const [isEditingImages, setIsEditingImages] = useState(false);
+  const { uploadImage, uploading } = useCloudinary();
+
+  const isOwner = union?.owner.id === currentUser?.id;
 
   useEffect(() => {
     const fetchUnion = async () => {
       try {
         const res = await makeRequest.get(`/unions/${slug}`);
         setUnion(res.data);
-      } catch (err: Error | unknown) {
+      } catch (err) {
         console.error("Full error:", err);
-        const error = err as { response?: { data: string } };
-        setError(error.response?.data || "Failed to load union");
+        const axiosError = err as AxiosError;
+        setError(
+          (axiosError.response?.data as string) || "Failed to load union"
+        );
       } finally {
         setLoading(false);
       }
@@ -57,10 +87,9 @@ const UnionView: React.FC<UnionViewProps> = ({ slug }) => {
     fetchUnion();
   }, [slug]);
 
-  const handleCreatePost = async () => {
+  const handleCreatePost = async (content: string) => {
     try {
       if (!content.trim()) {
-        console.error("Content is required");
         return;
       }
 
@@ -73,20 +102,35 @@ const UnionView: React.FC<UnionViewProps> = ({ slug }) => {
         unionId: union.id,
       };
 
-      const response = await makeRequest.post("/posts", postData);
-
-      setContent("");
+      await makeRequest.post("/posts", postData);
       setIsCreateOpen(false);
-      // Optional: Refresh posts
       window.location.reload();
-    } catch (err: any) {
-      console.error(
-        "Failed to create post:",
-        err.response?.data || err.message
-      );
-      if (err.response?.status === 401 || err.response?.status === 403) {
+    } catch (err) {
+      const axiosError = err as AxiosError;
+      if (
+        axiosError.response?.status === 401 ||
+        axiosError.response?.status === 403
+      ) {
         alert("Please log in to create posts");
       }
+    }
+  };
+
+  const handleImageUpload = async (type: "cover" | "profile", file: File) => {
+    try {
+      const imageUrl = await uploadImage(file);
+
+      if (!imageUrl || !union?.id) {
+        throw new Error("Failed to upload image to Cloudinary");
+      }
+
+      // Refresh union data
+      const res = await makeRequest.get(`/unions/${slug}`);
+      setUnion(res.data);
+    } catch (err) {
+      const axiosError = err as AxiosError;
+      console.error("Image upload error:", err);
+      alert(axiosError.response?.data || "Failed to update image");
     }
   };
 
@@ -105,16 +149,104 @@ const UnionView: React.FC<UnionViewProps> = ({ slug }) => {
           />
         </div>
         <div className="flex items-center space-x-4 mb-6">
-          <img
-            src={union.profilePic || "/default-avatar.png"}
-            alt={union.owner.username}
-            className="w-16 h-16 rounded-full border-4 border-white shadow-lg"
-          />
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">{union.name}</h1>
-            <p className="text-gray-600">Created by {union.owner.username}</p>
+          <div className="relative">
+            <img
+              src={union.profilePic || "/default-avatar.png"}
+              alt={union.owner.username}
+              className="w-16 h-16 rounded-full border-4 border-white shadow-lg"
+            />
+          </div>
+          <div className="flex-1">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {union.name}
+                </h1>
+                <p className="text-gray-600">
+                  Created by {union.owner.username}
+                </p>
+              </div>
+              {isOwner && (
+                <button
+                  onClick={() => setIsEditingImages(!isEditingImages)}
+                  className="px-4 py-2 text-sm border-2 border-blue-600 text-blue-600 rounded-full hover:bg-blue-50 transition-colors">
+                  {isEditingImages ? "Done Editing" : "Edit Images"}
+                </button>
+              )}
+            </div>
           </div>
         </div>
+
+        {isOwner && isEditingImages && (
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Edit Union Images
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Cover Image
+                </label>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={union.coverPic || "/default-cover.png"}
+                    alt="Current cover"
+                    className="w-32 h-20 object-cover rounded"
+                  />
+                  <input
+                    type="file"
+                    ref={coverInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    title="Upload cover image"
+                    aria-label="Upload cover image"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload("cover", file);
+                    }}
+                  />
+                  <button
+                    onClick={() => coverInputRef.current?.click()}
+                    disabled={uploading}
+                    className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {uploading ? "Uploading..." : "Choose New Cover"}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Profile Image
+                </label>
+                <div className="flex items-center gap-4">
+                  <img
+                    src={union.profilePic || "/default-avatar.png"}
+                    alt="Current profile"
+                    className="w-16 h-16 object-cover rounded-full"
+                  />
+                  <input
+                    type="file"
+                    ref={profileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    title="Upload image"
+                    aria-label="Upload image"
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload("profile", file);
+                    }}
+                  />
+                  <button
+                    onClick={() => profileInputRef.current?.click()}
+                    className="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50">
+                    Choose New Profile Picture
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <p className="text-gray-700 mb-6">{union.desc}</p>
       </div>
       <>
@@ -167,55 +299,10 @@ const UnionView: React.FC<UnionViewProps> = ({ slug }) => {
         </div>
 
         {isCreateOpen && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-4">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              Create a Post
-            </h2>
-            <div className="space-y-4">
-              {/* <div>
-                <label
-                  htmlFor="post-title"
-                  className="block text-sm font-medium text-gray-700 mb-2">
-                  Title
-                </label>
-                <input
-                  type="text"
-                  id="post-title"
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
-                  placeholder="Enter your post title"
-                  className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div> */}
-              <div>
-                <label
-                  htmlFor="post-content"
-                  className="block text-sm font-medium text-gray-700 mb-2">
-                  Content
-                </label>
-                <textarea
-                  id="post-content"
-                  value={content}
-                  onChange={e => setContent(e.target.value)}
-                  rows={4}
-                  placeholder="What would you like to share?"
-                  className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              <div className="flex justify-between mt-4">
-                <button
-                  onClick={handleCreatePost}
-                  className="inline-flex items-center gap-2 border-2 border-blue-600 bg-white hover:bg-blue-50 rounded-full px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md">
-                  <span className="text-blue-600 font-medium">Create Post</span>
-                </button>
-                <button
-                  onClick={() => setIsCreateOpen(false)}
-                  className="inline-flex items-center gap-2 border-2 border-gray-600 bg-white hover:bg-blue-50 rounded-full px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md">
-                  <span className="text-gray-600 font-medium">Cancel</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <CreatePost
+            onSubmit={handleCreatePost}
+            onCancel={() => setIsCreateOpen(false)}
+          />
         )}
 
         <Posts sortBy={sortBy} timeframe={timeframe} unionId={union.id} />

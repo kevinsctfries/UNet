@@ -56,3 +56,36 @@ export const createUnion = (req, res) => {
     });
   });
 };
+
+export const updateUnionImage = async (req, res) => {
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not logged in!");
+
+  try {
+    const userInfo = jwt.verify(token, process.env.JWT_SECRET);
+    const { id } = req.params;
+    const { type, imageUrl } = req.body;
+
+    if (!type || !imageUrl) {
+      return res.status(400).json("Missing required fields");
+    }
+
+    const column = type === "cover" ? "coverPic" : "profilePic";
+
+    const q = `UPDATE unions SET ${column} = ? WHERE id = ? AND ownerId = ?`;
+
+    db.query(q, [imageUrl, id, userInfo.id], (err, result) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json(err);
+      }
+      if (result.affectedRows === 0) {
+        return res.status(403).json("Not authorized to update this union");
+      }
+      return res.status(200).json("Image updated successfully");
+    });
+  } catch (err) {
+    console.error("Error updating union image:", err);
+    return res.status(500).json(err.message);
+  }
+};
