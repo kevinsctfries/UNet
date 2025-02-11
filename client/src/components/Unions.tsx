@@ -124,6 +124,10 @@ const UnionView: React.FC<UnionViewProps> = ({ slug }) => {
         throw new Error("Failed to upload image to Cloudinary");
       }
 
+      await makeRequest.put(`/unions/${union.id}`, {
+        [type === "cover" ? "coverPic" : "profilePic"]: imageUrl,
+      });
+
       // Refresh union data
       const res = await makeRequest.get(`/unions/${slug}`);
       setUnion(res.data);
