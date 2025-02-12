@@ -6,11 +6,18 @@ import { AxiosError } from "axios";
 import { AuthContext } from "../context/authContext";
 import { useCloudinary } from "../hooks/useCloudinary";
 
+interface LoginInputs {
+  username: string;
+  password: string;
+}
+
 interface AuthContextType {
   currentUser: {
     id: number;
     username: string;
   } | null;
+  login: (inputs: LoginInputs) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const CreateUnion: React.FC = () => {
@@ -127,18 +134,24 @@ const CreateUnion: React.FC = () => {
 
           <div className="flex items-center gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="cover-image-input"
+                className="block text-sm font-medium text-gray-700 mb-2">
                 Cover Image
               </label>
               <input
+                id="cover-image-input"
                 type="file"
                 ref={coverInputRef}
                 onChange={e => handleFileChange("cover", e)}
                 accept="image/*"
                 className="hidden"
+                aria-label="Upload cover image"
               />
               <button
                 onClick={() => coverInputRef.current?.click()}
+                type="button"
+                aria-label="Select cover image"
                 className="inline-flex items-center gap-2 border-2 border-gray-300 bg-white hover:bg-gray-50 rounded-full px-4 py-2 transition-all duration-200">
                 <AttachFileIcon className="text-gray-600" />
                 <span className="text-gray-600 text-sm">
@@ -153,18 +166,24 @@ const CreateUnion: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="profile-image-input"
+                className="block text-sm font-medium text-gray-700 mb-2">
                 Profile Image
               </label>
               <input
+                id="profile-image-input"
                 type="file"
                 ref={profileInputRef}
                 onChange={e => handleFileChange("profile", e)}
                 accept="image/*"
                 className="hidden"
+                aria-label="Upload profile image"
               />
               <button
                 onClick={() => profileInputRef.current?.click()}
+                type="button"
+                aria-label="Select profile image"
                 className="inline-flex items-center gap-2 border-2 border-gray-300 bg-white hover:bg-gray-50 rounded-full px-4 py-2 transition-all duration-200">
                 <AttachFileIcon className="text-gray-600" />
                 <span className="text-gray-600 text-sm">
