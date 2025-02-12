@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import Posts from "../components/Posts";
 import Sidebar from "../components/Sidebar";
 import UnionView from "../components/Unions";
+import CreateUnion from "../components/CreateUnion";
 
 type SortOption = "most_liked" | "trending" | "new";
 type TimeframeOption =
@@ -18,6 +19,7 @@ const Dashboard: React.FC = () => {
   const [sortBy, setSortBy] = useState<SortOption>("most_liked");
   const [timeframe, setTimeframe] = useState<TimeframeOption>("today");
   const { slug } = useParams<{ slug?: string }>();
+  const location = useLocation();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -28,7 +30,9 @@ const Dashboard: React.FC = () => {
         </aside>
         <main className="flex-1 p-4 overflow-y-auto ml-[20%] bg-gray-100">
           <div className="w-full max-w-2xl mx-auto space-y-6">
-            {slug ? (
+            {location.pathname === "/create-union" ? (
+              <CreateUnion />
+            ) : slug ? (
               <UnionView slug={slug} />
             ) : (
               <>
