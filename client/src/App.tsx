@@ -30,6 +30,8 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/u/:slug" element={<Dashboard />} />
+              <Route path="/u/:slug/:postId" element={<Dashboard />} />{" "}
+              {/* Updated this route */}
               <Route path="/create-union" element={<Dashboard />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />

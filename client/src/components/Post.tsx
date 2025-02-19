@@ -1,11 +1,9 @@
-// import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
-// import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
+import { useNavigate } from "react-router-dom";
 import TextsmsOutlinedIcon from "@mui/icons-material/TextsmsOutlined";
 import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import { Link } from "react-router-dom";
 import { useState, useContext } from "react";
-// import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"; // Commented out for likes functionality
 import { AuthContext } from "../context/authContext";
 import { makeRequest } from "../axios";
 
@@ -27,10 +25,10 @@ interface PostProps {
 }
 
 const Post: React.FC<PostProps> = ({ post }) => {
-  const [commentOpen, setCommentOpen] = useState(false);
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-
   const context = useContext(AuthContext);
+
   if (!context) {
     throw new Error(
       "AuthContext is undefined. Ensure AuthContextProvider wraps the component tree."
@@ -40,6 +38,13 @@ const Post: React.FC<PostProps> = ({ post }) => {
 
   const handleDelete = () => {
     makeRequest.delete(`/posts/${post.id}`);
+  };
+
+  const handleCommentClick = () => {
+    const path = post.union
+      ? `/u/${post.union.slug}/${post.id}`
+      : `/post/${post.id}`;
+    navigate(path);
   };
 
   return (
@@ -122,7 +127,7 @@ const Post: React.FC<PostProps> = ({ post }) => {
           </div> */}
           <div
             className="item flex items-center cursor-pointer"
-            onClick={() => setCommentOpen(!commentOpen)}>
+            onClick={handleCommentClick}>
             <TextsmsOutlinedIcon />
             <span className="ml-2">See Comments</span>
           </div>

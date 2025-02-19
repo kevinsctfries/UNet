@@ -37,6 +37,38 @@ export const getPosts = (req, res) => {
   });
 };
 
+export const getPost = (req, res) => {
+  const { id } = req.params;
+  const token = req.cookies.accessToken;
+  if (!token) return res.status(401).json("Not logged in!");
+
+  const q = `
+    SELECT p.*, u.id AS userId, u.name, u.profilePic,
+           un.name as unionName, un.slug as unionSlug
+    FROM posts AS p 
+    JOIN users AS u ON (u.id = p.userId)
+    LEFT JOIN unions un ON (un.id = p.unionId)
+    WHERE p.id = ?
+  `;
+
+  db.query(q, [id], (err, data) => {
+    if (err) return res.status(500).json(err);
+    if (data.length === 0) return res.status(404).json("Post not found");
+
+    const post = {
+      ...data[0],
+      union: data[0].unionName
+        ? {
+            name: data[0].unionName,
+            slug: data[0].unionSlug,
+          }
+        : undefined,
+    };
+
+    return res.status(200).json(post);
+  });
+};
+
 export const createPost = (req, res) => {
   const token = req.cookies.accessToken;
 

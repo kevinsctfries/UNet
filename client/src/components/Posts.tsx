@@ -17,12 +17,20 @@ interface Post {
 }
 
 interface PostsProps {
-  sortBy: SortOption;
-  timeframe: TimeframeOption;
-  unionId?: number;
+  sortBy?: SortOption;
+  timeframe?: TimeframeOption;
+  unionSlug?: string;
+  postId?: string;
+  singlePost?: boolean;
 }
 
-const Posts: React.FC<PostsProps> = ({ sortBy, timeframe, unionId }) => {
+const Posts: React.FC<PostsProps> = ({
+  sortBy,
+  timeframe,
+  unionSlug,
+  postId,
+  singlePost,
+}) => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<AxiosError | null>(null);
@@ -30,22 +38,28 @@ const Posts: React.FC<PostsProps> = ({ sortBy, timeframe, unionId }) => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const params = {
-          sortBy,
-          timeframe,
-          ...(unionId && { unionId }), // Only add unionId to params if it exists
-        };
-        const res = await makeRequest.get("/posts", { params });
-        setPosts(res.data);
+        setIsLoading(true);
+        const endpoint = "/posts";
+        let response;
+
+        if (singlePost && postId) {
+          response = await makeRequest.get(`/posts/${postId}`);
+          setPosts([response.data]); // Wrap single post in array
+        } else {
+          response = await makeRequest.get(endpoint);
+          setPosts(response.data);
+        }
+
         setIsLoading(false);
       } catch (err) {
+        console.error("Error fetching posts:", err);
         setError(err as AxiosError);
         setIsLoading(false);
       }
     };
 
     fetchPosts();
-  }, [sortBy, timeframe, unionId]);
+  }, [postId, singlePost]);
 
   if (error) {
     return (

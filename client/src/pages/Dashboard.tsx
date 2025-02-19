@@ -18,7 +18,7 @@ type TimeframeOption =
 const Dashboard: React.FC = () => {
   const [sortBy, setSortBy] = useState<SortOption>("most_liked");
   const [timeframe, setTimeframe] = useState<TimeframeOption>("today");
-  const { slug } = useParams<{ slug?: string }>();
+  const { slug, postId } = useParams<{ slug?: string; postId?: string }>();
   const location = useLocation();
 
   return (
@@ -32,6 +32,8 @@ const Dashboard: React.FC = () => {
           <div className="w-full max-w-2xl mx-auto space-y-6">
             {location.pathname === "/create-union" ? (
               <CreateUnion />
+            ) : postId ? (
+              <Posts unionSlug={slug} postId={postId} singlePost />
             ) : slug ? (
               <UnionView slug={slug} />
             ) : (
