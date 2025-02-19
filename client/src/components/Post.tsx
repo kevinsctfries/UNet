@@ -19,6 +19,10 @@ interface PostProps {
     createdAt: string;
     desc: string;
     img?: string;
+    union?: {
+      slug: string;
+      name: string;
+    };
   };
 }
 
@@ -34,35 +38,6 @@ const Post: React.FC<PostProps> = ({ post }) => {
   }
   const { currentUser } = context;
 
-  // Commented out the query for likes
-  // const { isLoading, error, data } = useQuery({
-  //   queryKey: ["likes", post.id],
-  //   queryFn: async () => {
-  //     const res = await makeRequest.get(`/likes?postId=${post.id}`);
-  //     return res.data;
-  //   },
-  // });
-  // if (error) console.error(error);
-
-  // Commented out the like mutation
-  // const queryClient = useQueryClient();
-  // const mutation = useMutation({
-  //   mutationFn: async (liked: boolean) => {
-  //     if (liked) {
-  //       return makeRequest.delete(`/likes?postId=${post.id}`);
-  //     }
-  //     return makeRequest.post("/likes", { postId: post.id });
-  //   },
-  //   onSuccess: () => {
-  //     queryClient.invalidateQueries({ queryKey: ["likes"] });
-  //   },
-  // });
-
-  // const handleLike = () => {
-  //   if (!data || !currentUser) return;
-  //   mutation.mutate(data.includes(currentUser.id));
-  // };
-
   const handleDelete = () => {
     makeRequest.delete(`/posts/${post.id}`);
   };
@@ -77,12 +52,22 @@ const Post: React.FC<PostProps> = ({ post }) => {
               src={post.profilePic}
               alt="Profile"
             />
-            <div className="details">
+            <div className="flex align-center gap-4">
               <Link
                 to={`/profile/${post.userId}`}
                 className="text-lg font-semibold text-gray-800 hover:text-blue-500">
                 {post.name}
               </Link>
+              {post.union ? (
+                <Link
+                  to={`/u/${post.union.slug}`}
+                  className="text-sm text-gray-500 hover:text-blue-500">
+                  u/{post.union.name}
+                </Link>
+              ) : (
+                // Add this for debugging
+                <span className="text-sm text-gray-400">No union data</span>
+              )}
             </div>
           </div>
           {currentUser && post.userId === currentUser.id && (

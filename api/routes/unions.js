@@ -9,6 +9,6 @@ const router = express.Router();
 
 router.get("/:slug", getUnion);
 router.post("/", createUnion);
-router.put("/:id/image", updateUnionImage);
+router.put("/:id/image", updateUnionImage); // Add this specific route for image updates
 
 export default router;

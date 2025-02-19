@@ -2,6 +2,9 @@ import express from "express";
 import authRoutes from "./routes/auth.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 import userRoutes from "./routes/users.js";
 import postRoutes from "./routes/posts.js";
@@ -47,3 +50,8 @@ app.listen(8800, err => {
 app.get("/", (req, res) => {
   res.status(200).json({ message: "API is working!" });
 });
+
+console.log(
+  "API Starting with JWT_SECRET:",
+  process.env.JWT_SECRET?.slice(0, 5) + "..."
+);

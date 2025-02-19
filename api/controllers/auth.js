@@ -43,31 +43,43 @@ export const register = (req, res) => {
   });
 };
 
-export const login = (req, res) => {
-  const q = "SELECT * FROM users WHERE username = ?";
+export const login = async (req, res) => {
+  try {
+    const q = "SELECT * FROM users WHERE username = ?";
 
-  db.query(q, [req.body.username], (err, data) => {
-    if (err) return res.status(500).json(err);
-    if (data.length === 0) return res.status(404).json("User not found!");
+    db.query(q, [req.body.username], (err, data) => {
+      if (err) return res.status(500).json(err);
+      if (data.length === 0) return res.status(404).json("User not found!");
 
-    const checkPassword = bcrypt.compareSync(
-      req.body.password,
-      data[0].password
-    );
+      const checkPassword = bcrypt.compareSync(
+        req.body.password,
+        data[0].password
+      );
 
-    if (!checkPassword) return res.status(400).json("Wrong password/username!");
+      if (!checkPassword)
+        return res.status(400).json("Wrong password/username!");
 
-    const token = jwt.sign({ id: data[0].id }, process.env.JWT_SECRET);
+      const token = jwt.sign({ id: data[0].id }, process.env.JWT_SECRET);
+      console.log("Login - Generated token with secret:", {
+        tokenPreview: token.slice(0, 15) + "...",
+        secretPreview: process.env.JWT_SECRET.slice(0, 15) + "...",
+      });
 
-    const { password, ...others } = data[0];
+      const { password, ...others } = data[0];
 
-    res
-      .cookie("accessToken", token, {
-        httpOnly: true,
-      })
-      .status(200)
-      .json(others);
-  });
+      res
+        .cookie("accessToken", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+        })
+        .status(200)
+        .json(others);
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    res.status(500).json(err.message);
+  }
 };
 
 export const logout = (req, res) => {

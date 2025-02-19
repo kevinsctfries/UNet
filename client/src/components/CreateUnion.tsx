@@ -34,39 +34,74 @@ const CreateUnion: React.FC = () => {
   const [profilePic, setProfilePic] = useState<File | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const profileInputRef = useRef<HTMLInputElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
+    setIsSubmitting(true);
     try {
       if (!currentUser) {
         throw new Error("Please log in to create a union");
+      }
+
+      // Add debug logging
+      console.log("Current user:", currentUser);
+      console.log("Auth state:", { name, description });
+
+      if (!name.trim()) {
+        setError("Union name is required");
+        return;
+      }
+
+      if (!description.trim()) {
+        setError("Union description is required");
+        return;
       }
 
       let coverPicUrl = null;
       let profilePicUrl = null;
 
       if (coverPic) {
+        console.log("Uploading cover pic...");
         coverPicUrl = await uploadImage(coverPic);
+        console.log("Cover pic URL:", coverPicUrl);
       }
 
       if (profilePic) {
+        console.log("Uploading profile pic...");
         profilePicUrl = await uploadImage(profilePic);
+        console.log("Profile pic URL:", profilePicUrl);
       }
 
       const unionData = {
-        name,
-        desc: description,
+        name: name.trim(),
+        desc: description.trim(),
         ...(coverPicUrl && { coverPic: coverPicUrl }),
         ...(profilePicUrl && { profilePic: profilePicUrl }),
       };
 
+      console.log("Sending union data:", unionData);
       const response = await makeRequest.post("/unions", unionData);
-      navigate(`/u/${response.data.slug}`);
+      console.log("Server response:", response.data);
+
+      if (response.data.slug) {
+        navigate(`/u/${response.data.slug}`);
+      } else {
+        throw new Error("Failed to get union slug");
+      }
     } catch (err) {
       const axiosError = err as AxiosError;
-      console.error("Union creation error:", err);
+      console.error("Full error:", axiosError);
+      console.error("Response data:", axiosError.response?.data);
+      console.error("Request details:", {
+        method: axiosError.config?.method,
+        url: axiosError.config?.url,
+        data: axiosError.config?.data,
+      });
       setError(
         (axiosError.response?.data as string) || "Failed to create union"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -201,10 +236,10 @@ const CreateUnion: React.FC = () => {
           <div className="flex justify-between mt-6">
             <button
               onClick={handleSubmit}
-              disabled={uploading}
+              disabled={isSubmitting || uploading}
               className="inline-flex items-center gap-2 border-2 border-blue-600 bg-white hover:bg-blue-50 rounded-full px-4 py-2 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
               <span className="text-blue-600 font-medium">
-                {uploading ? "Creating..." : "Create Union"}
+                {isSubmitting ? "Creating Union..." : "Create Union"}
               </span>
             </button>
             <button

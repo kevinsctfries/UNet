@@ -3,6 +3,9 @@ import Post from "./Post";
 import { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 
+type SortOption = "most liked" | "trending" | "new";
+type TimeframeOption = "today" | "week" | "month" | "year" | "all";
+
 interface Post {
   id: number;
   name: string;
