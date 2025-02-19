@@ -8,9 +8,11 @@ export const getPosts = (req, res) => {
   const { unionId } = req.query;
 
   const q = `
-    SELECT p.*, u.id AS userId, name, profilePic 
+    SELECT p.*, u.id AS userId, u.name, u.profilePic,
+           un.name as unionName, un.slug as unionSlug
     FROM posts AS p 
     JOIN users AS u ON (u.id = p.userId)
+    LEFT JOIN unions un ON (un.id = p.unionId)
     ${unionId ? "WHERE p.unionId = ?" : ""}
     ORDER BY p.createdAt DESC
   `;
@@ -21,7 +23,17 @@ export const getPosts = (req, res) => {
     if (err) {
       return res.status(500).json(err);
     }
-    return res.status(200).json(data);
+    // Transform the data to match the expected format
+    const posts = data.map(post => ({
+      ...post,
+      union: post.unionName
+        ? {
+            name: post.unionName,
+            slug: post.unionSlug,
+          }
+        : undefined,
+    }));
+    return res.status(200).json(posts);
   });
 };
 
