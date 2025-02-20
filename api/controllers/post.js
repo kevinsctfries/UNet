@@ -5,7 +5,7 @@ export const getPosts = (req, res) => {
   const token = req.cookies.accessToken;
   if (!token) return res.status(401).json("Not logged in!");
 
-  const { unionId } = req.query;
+  const { unionSlug } = req.query; // Change from unionId to unionSlug
 
   const q = `
     SELECT p.*, u.id AS userId, u.name, u.profilePic,
@@ -13,11 +13,11 @@ export const getPosts = (req, res) => {
     FROM posts AS p 
     JOIN users AS u ON (u.id = p.userId)
     LEFT JOIN unions un ON (un.id = p.unionId)
-    ${unionId ? "WHERE p.unionId = ?" : ""}
+    ${unionSlug ? "WHERE un.slug = ?" : ""}
     ORDER BY p.createdAt DESC
   `;
 
-  const params = unionId ? [unionId] : [];
+  const params = unionSlug ? [unionSlug] : [];
 
   db.query(q, params, (err, data) => {
     if (err) {

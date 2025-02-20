@@ -311,7 +311,11 @@ const UnionView: React.FC<UnionViewProps> = ({ slug }) => {
           />
         )}
 
-        <Posts sortBy={sortBy} timeframe={timeframe} unionId={union.id} />
+        <Posts
+          sortBy={sortBy}
+          timeframe={timeframe}
+          unionSlug={slug} // Change this from unionId={union.id} to unionSlug={slug}
+        />
       </>
     </div>
   );

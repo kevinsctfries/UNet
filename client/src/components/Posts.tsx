@@ -39,14 +39,18 @@ const Posts: React.FC<PostsProps> = ({
     const fetchPosts = async () => {
       try {
         setIsLoading(true);
-        const endpoint = "/posts";
-        let response;
+        let endpoint = "/posts";
+        let params = {};
 
         if (singlePost && postId) {
-          response = await makeRequest.get(`/posts/${postId}`);
+          const response = await makeRequest.get(`/posts/${postId}`);
           setPosts([response.data]); // Wrap single post in array
         } else {
-          response = await makeRequest.get(endpoint);
+          // Add unionSlug to params if it exists
+          if (unionSlug) {
+            params = { ...params, unionSlug };
+          }
+          const response = await makeRequest.get(endpoint, { params });
           setPosts(response.data);
         }
 
@@ -59,7 +63,7 @@ const Posts: React.FC<PostsProps> = ({
     };
 
     fetchPosts();
-  }, [postId, singlePost]);
+  }, [postId, singlePost, unionSlug]); // Add unionSlug to dependencies
 
   if (error) {
     return (
